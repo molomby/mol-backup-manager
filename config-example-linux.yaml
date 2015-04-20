@@ -1,0 +1,70 @@
+---
+# Files end up in...
+#  [bucket][path]/[object-key]/[object-key]-latest.7z
+#  [bucket][path]/[object-key]/[object-key]-[YYYYMMDD]-[HHmm].7z
+
+
+# System paths
+7zip-execPath:      C:\Program Files\7-Zip\7z.exe
+log-dir:            C:\Development\backup\logs
+mssql-backup-dir:   C:\Development\Databases\Backup
+
+
+# Configure email notifications
+email:
+    server:     smtp.mandrillapp.com
+    port:       587
+    user:       production@example.com
+    password:   *************
+    from_email: server@example.com
+    to_email:   production@example.com
+    subject:    Error encounted on SERVER during automated backups
+
+
+# Define storage locations
+stores:
+    s3-dev: &storage-s3
+        type:       s3
+        path:       /backups
+        bucket:     your-bucket
+        accessId:   ****************
+        secretKey:  ****************
+
+    dir-dev: &storage-dir
+        type:       dir
+        path:       C:\Server\backups
+
+defaults:
+    schedule:   { "hourly": 24, "daily": 21, "weekly": 8, "monthly": 24 }
+    store:      *storage-s3
+
+
+# Path expansion done using glob; "Unix style pathname pattern expansion"
+# FULL | DIFF | LOG
+resources:
+
+    Northbridge-db-full:
+        password:   *************
+        schedule:   { "hourly": 0, "daily": 21, "weekly": 8, "monthly": 24 }
+        mssql:
+            server:     server,1433\\MSSQL2k8R2
+            database:   Northbridge
+            user:       sa
+            password:   *************
+            type:       FULL
+
+    Northbridge-db-diff:
+        password:   *************
+        schedule:   { "hourly": 48, "daily": 0, "weekly": 0, "monthly": 0 }
+        mssql:      { database: "Northbridge", type: "DIFF", server: "server,1433\\MSSQL2k8R2", user: "sa", password: "**********"}
+
+    test-file:
+        path:       C:\Users\John\Downloads\*.xlsx
+        password:   *************
+        limit:      latest
+
+    test-dir:
+        path:       C:\Development\Codebases\Bits and pieces
+        store:      *storage-s3
+
+
