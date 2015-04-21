@@ -1,0 +1,47 @@
+
+
+Bugs
+	
+	1	Breaks if no default config set
+	2	Progress indicators broken on Linux
+
+Logging
+
+	2	Log/output dates/times
+	2	Log filesizes of backup files, archives, etc.
+
+	3	Progress meter included in log file; should just be time, average speed?
+	3	Log less but add debug/verbose mode
+	3	Use proper logging object?
+
+
+New functionality
+
+	1	Interactive restore functionality?
+	1	Move path in bucket to the resource (so resources can upload to "databases", "files", etc)
+	1	Config options to disable mail, etc. (local test mode?)
+	1	Pass config path as argument
+
+	2	Better job of defaulting/setting DB connection properties (centralise)
+	2	Compare local md5s with remote version before overwriting latest (save bandwidth)
+	2	Configurable temp dir root (should be able to use ephemeral)
+	2	Option to save 'latest' or not (not required for diff backups..)
+	2	Option to verify uploads/copies (MD5s)
+	2	Backup verification functionality/notifications (to be run remotely/independantly)
+		.. actually downloads and decrypts backups
+		.. and restores?
+
+	3	Progress meter doesn't give total size, etc
+	3	Validate config/test run without processing backups/uploading
+	3	.. seperated command to test email, stores, etc?
+
+
+Refactoring
+
+	1	Move notification to a proper template (mako or something)
+	1	Switch to pylzma for compression (or similar?)
+	1	"Use EC2 roles, do not give applications an IAM account"
+		.. https://wblinks.com/notes/aws-tips-i-wish-id-known-before-i-started/
+
+	2	Common components (stores -vs- local, etc) for backups, restores, verifications, etc
+	2	Fix issues around the MSSQL local directory name; path uses server-reported name rather  than given in config

@@ -8,14 +8,13 @@ Another backup script; because nothing I could find did quite what I wanted.
 
 * Python based; runs on Windows and Linux
 * YAML based configuration == nice and readable
-* Can backup from MS SQL, ~~MySQL~~ (coming soon!) or local files
+* Can backup directly from MS SQL, MySQL or local files
 * Backs up to an S3 (or S3-compatible) bucket (because fuck FTP)
 * Compresses backups using 7-zip (LZMA compression algorithm)
 * Hourly, daily, weekly and monthly backups
 * Sensible file names (ISO 8601 for the win)
-* Can run compression threads as low priority (Windows only)
+* Runs compression threads as low priority
 * Password protected archives (AES-256)
-* Handles deletion of old backups
 * Notifies by email if/when errors are encountered
 * Multiple backup schedules per resource (eg. 10 daily backups + 4 weekly backups + 6 monthly backups, etc)
 * Sensible deduplication of overlapping periods (eg. a single backup can belong to multiple period "sets")
@@ -29,11 +28,18 @@ This tool works for me but may well not work for anyone else. Testing has been l
 
 Expect to get your hands dirty, use at your own risk, YMMV, etc.
 
+Specific things to look out for:
+
+* LZMA is fairly memory hungry so watch out for that
+* Not a lot of configuration options at this stage (eg. can't disable compression, encryption, emails, etc)
+* Basically assumes MySQL is Linux only
+* Will not function without a working mail server (!)
+* The last 24 hours of logs are stored locally as is the most recent backup for each resource
 
 
 # Setup
 
-To get this working you'll need to get a few things in place. The broad strokes are...
+To get this working you'll need to get a few things in place:
 
 1. Install the prerequisites
 2. Get the code
@@ -121,9 +127,7 @@ See the [AWS documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/examp
 
 ## 4. Create your config.yml
 
-The config structure is largely documented in the example configs provided; either `config-example-win.yaml` or `config-example-linux.yaml` depending on your platform.
-
-These configs are equivilant, they dother than the sample paths given. Create a copy of the relevant example named config.yaml and populate it with your details.
+The config structure is largely documented in the example configs provided; either `config-example-win.yaml` or `config-example-linux.yaml` depending on your platform. Create a copy of the relevant example named config.yaml and populate it with your details.
 
 ### Email
 
@@ -131,11 +135,15 @@ These backup scripts *require* a working email server to run and will fail witho
 
 I suggest the most excellent [Mandrill](https://mandrillapp.com) service from MailChimp. They provide very reliable mail delivery infrastructure, free up to 12k mails a month.
 
+### YAML is pretty sweet
+
+The 'defaults' structure in config.yaml is handy but don't forget you can use other YAML features, eg. referential anchors.
+
 
 
 ## 5. Testing
 
-At this point (if you're following these steps in order) you should have a working backup script. It's probably a good idea to test everything's working before continuing to the last step. Execute run `run.py` and check the output. Obviously you want to make sure everythings working as expected before moving to the final step.
+At this point (if you're following these steps in order) you should have a working backup script but it's a good idea to test everything's working before continuing to the last step. Execute run `run.py` and check the output.
 
 The process will work though each resource, comparing the files stored remotely with the configured schedules. If a resource is missing it's current backup for any period it will be backed up, compressing and uploaded to S3. Any errors encountered will generate an email containing the output of the script.
 
@@ -164,10 +172,10 @@ In Windows the built in task scheduler will do the job. When configuring the tas
 
 ### Linux
 
-On Linux `cron` is the weapon of choice. If you haven't already, add a line to your crontab, or `root`s if you'd rather. 
+On Linux, `cron` is the weapon of choice. If you haven't already, add a line to your crontab, or `root`s if you'd rather. 
 
 In my case it looks like this:
 
-	...[docs incomplete]
+	# Run the backup process every hour
+	0 * * * * python /home/ubuntu/mol-backup-manager/run.py auto
 
-:(
