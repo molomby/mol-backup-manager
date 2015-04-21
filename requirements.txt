@@ -1,3 +1,5 @@
 boto
 PyYAML
 bunch
+psutil
+

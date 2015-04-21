@@ -28,7 +28,7 @@ class LocalBase(object):
 			# Command contains passwords.. don't print/log
 			#print("    *", f, "to archive with command:\n      ", command )
 			print("    *", f, "to archive" )
-			subproc = subprocess.Popen(command) #, stdout=subprocess.PIPE
+			subproc = subprocess.Popen(command, shell=True) #, stdout=subprocess.PIPE
 			self.reduce_process_priority(subproc.pid)
 
 			poll_interval = 0.05
@@ -103,7 +103,7 @@ class LocalMsSqlDb(LocalBase):
 	def identify_files(self):
 		import datetime, string
 
-		log_file = os.path.join(self.log_dir, "sqlcmd-" + self.database + "-" + self.type + "-" + str(datetime.datetime.now().hour) + ".log")
+		log_file = os.path.join(self.log_dir, "sqlcmd-" + self.database + "-" + self.type + "-" + datetime.datetime.now().strftime('%Y%m%d') + ".log")
 
 		sql_subs = {"db_name": self.database, "dir_path": self.backup_dir, "backup_type": self.type}
 		sql_temp = "EXECUTE dbo.DatabaseBackup @Databases='$db_name', @Directory='$dir_path', @BackupType='$backup_type', @Compress='N', @Encrypt='N', @CleanupTime=25"
@@ -149,3 +149,52 @@ class LocalMsSqlDb(LocalBase):
 		if len(i) == 1: return i[0].upper()
 		p = i[0].split(",")
 		return p[0].upper() + "$" + i[1]
+
+
+class LocalMySqlDb(LocalBase):
+	def __init__(self, exec_path, backup_dir, log_dir, server, database, user, password):
+		super(LocalMySqlDb, self).__init__(exec_path)
+		self.backup_dir = backup_dir
+		self.log_dir = log_dir
+
+		self.server = server
+		self.database = database
+		self.user = user
+		self.password = password
+
+	def identify_files(self):
+		import datetime, string
+
+		log_file = os.path.join(self.log_dir, self.database + "-" + datetime.datetime.now().strftime('%Y%m%d-%H%M') + ".log")
+		backup_file = os.path.join(self.backup_dir, self.database + "-" + datetime.datetime.now().strftime('%Y%m%d-%H%M') + ".sql")
+		
+		# mysqldump -u root -p[root_password] [database_name] > dumpfilename.sql 2> output.log
+		cmd_subs = {"server": self.server, "user": self.user, "password": self.password, "log_file": log_file, "database": self.database, "backup_file": backup_file}
+		cmd_temp = "mysqldump -u $user -v -p$password $database > '$backup_file' 2> '$log_file'"
+		
+		cmd = string.Template(cmd_temp).substitute(**cmd_subs)
+
+		print("RUNNING: ", cmd)
+		
+		
+		# Command contains passwords.. don't print/log
+		print("  Creating MySQL backup\n  Executing", end="")
+		subproc = subprocess.Popen(cmd, shell=True)		# , stdout=subprocess.PIPE
+
+		poll_interval = 0.05
+		while subproc.returncode is None:
+			print(".", end='')
+			time.sleep(poll_interval)
+			poll_interval = min(1, poll_interval * 1.2)
+			subproc.poll()
+
+		print(" Done")
+
+		#output = open(log_file).read()
+		#print("  Logfile\n---------------------", output)
+
+		# Finding the actual files
+		files = [max(glob.iglob(backup_file), key=os.path.getctime)]
+		print("  Idenfied", len(files), "file(s)")
+
+		return files

@@ -5,7 +5,7 @@ from bunch import Bunch
 import os.path, copy, smtplib, sys, traceback, datetime
 
 from modules.resource import Resource
-from modules.local import LocalFiles, LocalMsSqlDb
+from modules.local import LocalFiles, LocalMsSqlDb, LocalMySqlDb
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
 	defaults = config["defaults"]
 
 	# Start logging
-	log_filepath = os.path.join(config["log-dir"], "backup-manager-" + str(datetime.datetime.now().hour) + ".log")
+	log_filepath = os.path.join(config["log-dir"], "backup-manager-" + datetime.datetime.now().strftime('%Y%m%d-%H%M') + ".log")
 	tee = Tee(log_filepath)
 
 	# verify we can connect to the SMTP server
@@ -44,8 +44,13 @@ def main():
 			elif "mssql" in rc:
 				mssql = Bunch(rc.mssql)
 				locsys = LocalMsSqlDb(config["7zip-execPath"], config["mssql-backup-dir"], config["log-dir"], mssql.server, mssql.database, mssql.user, mssql.password, mssql.type)
+			elif "mysql" in rc:
+				mysql = Bunch(rc.mysql)
+				locsys = LocalMySqlDb(config["7zip-execPath"], config["mysql-backup-dir"], config["log-dir"], mysql.server, mysql.database, mysql.user, mysql.password)
+			else:
+				print("Invalid resource config; must contain one of: path, mssql, mysql.")
+				print(rc)			
 			
-
 			# Get the resource arguments and apply defaults
 			args = dict(filter(lambda i:i[0] in ("schedule","store","password","compression"), rc.iteritems()))
 			args = copy.deepcopy(dict(defaults.items() + args.items()))
