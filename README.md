@@ -18,7 +18,7 @@ Another backup script; because nothing I could find did quite what I wanted.
 * Notifies by email if/when errors are encountered
 * Multiple backup schedules per resource (eg. 10 daily backups + 4 weekly backups + 6 monthly backups, etc)
 * Sensible de-duplication of overlapping periods (eg. a single backup can belong to multiple period "sets")
-* Most recent backup always stored at a static path (not date based)
+* Most recent backup duplicated at a static path (not date based)
 
 
 
