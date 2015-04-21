@@ -5,9 +5,9 @@
 
 
 # System paths
-7zip-execPath:      C:\Program Files\7-Zip\7z.exe
-log-dir:            C:\Development\backup\logs
-mssql-backup-dir:   C:\Development\Databases\Backup
+7zip-execPath:      /usr/bin/7z
+log-dir:            /home/ubuntu/backups
+mysql-backup-dir:   /home/ubuntu/backups
 
 
 # Configure email notifications
@@ -15,56 +15,47 @@ email:
     server:     smtp.mandrillapp.com
     port:       587
     user:       production@example.com
-    password:   *************
-    from_email: server@example.com
+    password:   *******************
+    from_email: server-name@example.com
     to_email:   production@example.com
-    subject:    Error encounted on SERVER during automated backups
+    subject:    Error encounted on SERVERNAME during automated backups
 
 
-# Define storage locations
-stores:
-    s3-dev: &storage-s3
-        type:       s3
-        path:       /backups
-        bucket:     your-bucket
-        accessId:   ****************
-        secretKey:  ****************
-
-    dir-dev: &storage-dir
-        type:       dir
-        path:       C:\Server\backups
-
+# Defaults
+# These will be used for all resources unless otherwise specified
 defaults:
-    schedule:   { "hourly": 24, "daily": 21, "weekly": 8, "monthly": 24 }
-    store:      *storage-s3
+    
+    # Used to encrypt the archives
+    password:   *************
+    
+    # Default schedule
+    schedule:   { "hourly": 0, "daily": 7, "weekly": 4, "monthly": 6 }
+    
+    # The location backups are saved to
+    # Note: you can define other stores elsewhere in the config and reference them from 
+    # resource definitions using YAML relational anchors ie. "&" and "*"
+    store: 
+        type:       s3
+        path:       /backups/servername
+        bucket:     bigcorp-backups
+        accessId:   AKXXXXXXXXXXXXXXXXXX
+        secretKey:  **********************************
 
 
-# Path expansion done using glob; "Unix style pathname pattern expansion"
-# FULL | DIFF | LOG
+# Resources
+# Various things to be backed up
 resources:
-
-    Northbridge-db-full:
-        password:   *************
-        schedule:   { "hourly": 0, "daily": 21, "weekly": 8, "monthly": 24 }
-        mssql:
-            server:     server,1433\\MSSQL2k8R2
-            database:   Northbridge
-            user:       sa
-            password:   *************
-            type:       FULL
-
-    Northbridge-db-diff:
-        password:   *************
-        schedule:   { "hourly": 48, "daily": 0, "weekly": 0, "monthly": 0 }
-        mssql:      { database: "Northbridge", type: "DIFF", server: "server,1433\\MSSQL2k8R2", user: "sa", password: "**********"}
-
-    test-file:
-        path:       C:\Users\John\Downloads\*.xlsx
-        password:   *************
-        limit:      latest
-
-    test-dir:
-        path:       C:\Development\Codebases\Bits and pieces
-        store:      *storage-s3
-
+    
+    # Databases
+    wordpress-blah-db:
+        schedule:   { "hourly": 48, "daily": 21, "weekly": 8, "monthly": 12 }
+        mysql:      { database: "my-wp-site", server: "localhost", user: "root", password: "************"}
+    someother-db:
+        mysql:      { database: "someother", server: "localhost", user: "root", password: "**********"}
+    phpmyadmin-db:
+        mysql:      { database: "phpmyadmin", server: "localhost", user: "root", password: "**********"}
+    
+    # Backup the site files once a day
+    hairfree-wwwroot:
+        path:       /srv/hairfree/wwwroot
 
