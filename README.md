@@ -17,7 +17,7 @@ Another backup script; because nothing I could find did quite what I wanted.
 * Password protected archives (AES-256)
 * Notifies by email if/when errors are encountered
 * Multiple backup schedules per resource (eg. 10 daily backups + 4 weekly backups + 6 monthly backups, etc)
-* Sensible deduplication of overlapping periods (eg. a single backup can belong to multiple period "sets")
+* Sensible de-duplication of overlapping periods (eg. a single backup can belong to multiple period "sets")
 * Most recent backup always stored at a static path (not date based)
 
 
@@ -43,7 +43,7 @@ To get this working you'll need to get a few things in place:
 
 1. Install the prerequisites
 2. Get the code
-3. Setup a S3 bucket and IAM credentials (or equivilant)
+3. Setup a S3 bucket and IAM credentials (or equivalent)
 4. Create your config.yaml
 5. Test everything runs as it should
 6. Schedule the script to run (in Cron or Windows Task Scheduler)
@@ -68,7 +68,7 @@ For this you need:
 * sqlcmd -- Comes with MS SQL Server
 * The [SQL Server Maintenance Solution](http://ola.hallengren.com) scripts by Ola Hallengren -- Apply them to the master db
 
-If you're creating a specific MS SQL user that will be used to perform the backups (generall a good idea), they [may need the `sysadmin` server role](http://stackoverflow.com/questions/10366676/backup-permissions).
+If you're creating a specific MS SQL user that will be used to perform the backups (generally a good idea), they [may need the `sysadmin` server role](http://stackoverflow.com/questions/10366676/backup-permissions).
 
 ### Linux
 
@@ -105,7 +105,7 @@ As a starting point, this policy will restrict an IAM user to a specific directo
 			{
 				"Action": "s3:*",
 				"Effect": "Allow",
-				"Resource": "arn:aws:s3:::molomby-backups/auto/servername123.molomby.com/*"
+				"Resource": "arn:aws:s3:::your-bucket/backups/server-name/*"
 			},
 			{
 				"Action": ["s3:ListAllMyBuckets", "s3:GetBucketLocation"],
@@ -115,7 +115,7 @@ As a starting point, this policy will restrict an IAM user to a specific directo
 			{
 				"Action": "s3:ListBucket",
 				"Effect": "Allow",
-				"Resource": "arn:aws:s3:::molomby-backups"
+				"Resource": "arn:aws:s3:::your-bucket"
 			}
 		],
 		"Version": "2012-10-17"
@@ -125,7 +125,7 @@ See the [AWS documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/examp
 
 
 
-## 4. Create your config.yml
+## 4. Create your config.yaml
 
 The config structure is largely documented in the example configs provided; either `config-example-win.yaml` or `config-example-linux.yaml` depending on your platform. Create a copy of the relevant example named config.yaml and populate it with your details.
 
@@ -135,9 +135,9 @@ These backup scripts *require* a working email server to run and will fail witho
 
 I suggest the most excellent [Mandrill](https://mandrillapp.com) service from MailChimp. They provide very reliable mail delivery infrastructure, free up to 12k mails a month.
 
-### YAML is pretty sweet
+### YAML is hella sweet
 
-The 'defaults' structure in config.yaml is handy but don't forget you can use other YAML features, eg. referential anchors.
+The `defaults` structure in config.yaml is handy but don't forget you can use other YAML features, like referential anchors, to support all kinds of fun configurations.
 
 
 
@@ -165,16 +165,16 @@ The scheduling process itself is platform dependant.
 In Windows the built in task scheduler will do the job. When configuring the task, ensure the following options are set correctly:
 
 * "Run whether logged in or not" 
-* Run as a user with sufficient access to the filesystem to perform the backups
+* Run as a user with sufficient access to the file system to perform the backups
 * When configuring the triggers (Triggers > Add trigger > .. )
-** "One time" (anytime in the past is fine)
-** Repeat task ever 1 hour, indefinitely
+  * "One time" (anytime in the past is fine)
+  * Repeat task ever 1 hour, indefinitely
 
 ### Linux
 
-On Linux, `cron` is the weapon of choice. If you haven't already, add a line to your crontab, or `root`s if you'd rather. 
+On Linux, `cron` is probably your weapon of choice. 
 
-In my case it looks like this:
+Add `run.py` to your crontab to run every hour; in my case it looks like this:
 
 	# Run the backup process every hour
 	0 * * * * python /home/ubuntu/mol-backup-manager/run.py auto
