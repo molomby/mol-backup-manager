@@ -165,8 +165,8 @@ class LocalMySqlDb(LocalBase):
 	def identify_files(self):
 		import datetime, string
 
-		log_file = os.path.join(self.log_dir, self.database + "-" + datetime.datetime.now().strftime('%Y%m%d-%H%M') + ".log")
-		backup_file = os.path.join(self.backup_dir, self.database + "-" + datetime.datetime.now().strftime('%Y%m%d-%H%M') + ".sql")
+		log_file = os.path.join(self.log_dir, self.database + "-" + str(datetime.datetime.now().hour) + ".log")
+		backup_file = os.path.join(self.backup_dir, self.database + ".sql")
 		
 		# mysqldump -u root -p[root_password] [database_name] > dumpfilename.sql 2> output.log
 		cmd_subs = {"server": self.server, "user": self.user, "password": self.password, "log_file": log_file, "database": self.database, "backup_file": backup_file}

@@ -16,7 +16,7 @@ def main():
 	defaults = config["defaults"]
 
 	# Start logging
-	log_filepath = os.path.join(config["log-dir"], "backup-manager-" + datetime.datetime.now().strftime('%Y%m%d-%H%M') + ".log")
+	log_filepath = os.path.join(config["log-dir"], "backup-manager-" + str(datetime.datetime.now().hour) + ".log")
 	tee = Tee(log_filepath)
 
 	# verify we can connect to the SMTP server
