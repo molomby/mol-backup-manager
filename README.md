@@ -30,6 +30,8 @@ Expect to get your hands dirty, use at your own risk, YMMV, etc.
 
 Specific things to look out for:
 
+* **Hardcoded for the Sydney region (ap-southeast-2)**
+* If backup tasks take longer than an hour (and the script is being run each hour) Bad Things will happen
 * LZMA is fairly memory hungry so watch out for that
 * Not a lot of configuration options at this stage (eg. can't disable compression, encryption, emails, etc)
 * Basically assumes MySQL is Linux only
